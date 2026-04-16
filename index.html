@@ -2,58 +2,38 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Candidatures Auto — Version Finale</title>
+    <title>Candidatures Auto — Prêt à l'envoi</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f5f0e8; --surface: #fffdf7; --ink: #1a1612; --accent: #c94f2b; --border: #d4cdc2; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 20px; }
-        .card { max-width: 650px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        h1 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 20px; }
-        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-top: 15px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-        .drop-zone { border: 2px dashed var(--border); padding: 20px; text-align: center; cursor: pointer; background: #fafafa; margin-top: 10px; }
-        .btn-send { width: 100%; padding: 15px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        #log { margin-top: 20px; font-size: 0.8rem; max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #eee; }
-        .success { color: green; } .error { color: red; }
+        :root { --bg: #f5f0e8; --ink: #1a1612; --accent: #c94f2b; --border: #d4cdc2; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 40px 20px; text-align: center; }
+        .card { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; }
+        h1 { font-family: 'DM Serif Display', serif; margin-bottom: 20px; }
+        .drop-zone { border: 2px dashed var(--border); padding: 30px; margin-bottom: 20px; cursor: pointer; background: #fafafa; }
+        textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; height: 100px; margin-bottom: 20px; }
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .btn-open { padding: 6px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; }
+        .btn-open:visited { background: #5c5347; }
+        #list { margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>Envoi Automatique</h1>
-    
-    <label>Ton Gmail</label>
-    <input type="email" id="smtp-user" placeholder="ton-email@gmail.com">
-    
-    <label>Code Application (16 lettres)</label>
-    <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
+    <h1>Candidatures Express</h1>
+    <p>Glisse ton CSV, et clique sur chaque bouton pour envoyer.</p>
 
     <div class="drop-zone" onclick="document.getElementById('csv-in').click()">
         <input type="file" id="csv-in" accept=".csv" hidden>
         <div id="csv-label">📁 Charger le fichier CSV</div>
     </div>
 
-    <div class="drop-zone" onclick="document.getElementById('pdf-in').click()">
-        <input type="file" id="pdf-in" accept=".pdf" hidden>
-        <div id="pdf-label">📎 Charger le Portfolio PDF</div>
-    </div>
+    <textarea id="mail-body">Bonjour {{prenom}}, je postule chez {{entreprise}}. Mon portfolio est en pièce jointe.</textarea>
 
-    <label>Message</label>
-    <textarea id="mail-body" rows="5">Bonjour {{prenom}}, voici mon portfolio pour {{entreprise}}.</textarea>
-
-    <button class="btn-send" onclick="startSending()">🚀 LANCER L'ENVOI AUTOMATIQUE</button>
-
-    <div id="log">En attente...</div>
+    <div id="list"></div>
 </div>
 
 <script>
-// --- LIBRAIRIE SMTPJS INTÉGRÉE (Pour éviter l'erreur de chargement) ---
-var Email = { send: function (a) { return new Promise(function (n, e) { a.nocache = Math.floor(1e6 * Math.random() + 1), a.Action = "Send"; var t = JSON.stringify(a); Email.ajaxPost("https://smtpjs.com/v1/smtp.js", t, function (e) { n(e) }) }) }, ajaxPost: function (e, n, t) { var a = Email.createCORSRequest("POST", e); a.setRequestHeader("Content-type", "application/x-www-form-urlencoded"), a.onload = function () { var e = a.responseText; null != t && t(e) }, a.send(n) }, ajax: function (e, n) { var t = Email.createCORSRequest("GET", e); t.onload = function () { var e = t.responseText; null != n && n(e) }, t.send() }, createCORSRequest: function (e, n) { var t = new XMLHttpRequest; return "withCredentials" in t ? t.open(e, n, !0) : "undefined" != typeof XDomainRequest ? (t = new XDomainRequest).open(e, n) : t = null, t } };
-
-let contacts = [];
-let portfolio = { base64: "", name: "" };
-
-// Lecture CSV
 document.getElementById('csv-in').onchange = e => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -64,69 +44,34 @@ document.getElementById('csv-in').onchange = e => {
         const compIdx = headers.indexOf('Company Name');
         const firstIdx = headers.indexOf('First Name');
 
-        contacts = lines.slice(1).filter(l => l.trim()).map(line => {
+        const contacts = lines.slice(1).filter(l => l.trim()).map(line => {
             const cells = line.split(sep).map(c => c.trim().replace(/"/g,''));
-            return { email: cells[emailIdx], company: cells[compIdx] || "votre entreprise", name: cells[firstIdx] || "Madame, Monsieur" };
-        }).filter(c => c.email && c.email.includes('@'));
-        document.getElementById('csv-label').innerText = `✅ ${contacts.length} contacts chargés`;
+            return { email: cells[emailIdx], company: cells[compIdx] || "", name: cells[firstIdx] || "" };
+        }).filter(c => c.email);
+
+        renderList(contacts);
     };
     reader.readAsText(e.target.files[0]);
 };
 
-// Lecture PDF
-document.getElementById('pdf-in').onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-        portfolio.base64 = reader.result.split(',')[1];
-        portfolio.name = file.name;
-        document.getElementById('pdf-label').innerText = `✅ PDF prêt : ${file.name}`;
-    };
-    reader.readAsDataURL(file);
-};
+function renderList(contacts) {
+    const list = document.getElementById('list');
+    const bodyTpl = document.getElementById('mail-body').value;
+    list.innerHTML = "<strong>Clique sur chaque bouton (ils changeront de couleur après l'envoi) :</strong><br><br>";
 
-async function startSending() {
-    const user = document.getElementById('smtp-user').value.trim();
-    const pass = document.getElementById('smtp-pass').value.replace(/\s/g, '');
-    const log = document.getElementById('log');
+    contacts.forEach(c => {
+        const subject = encodeURIComponent(`Candidature — ${c.company}`);
+        const body = encodeURIComponent(bodyTpl.replace('{{prenom}}', c.name).replace('{{entreprise}}', c.company));
+        const mailto = `mailto:${c.email}?subject=${subject}&body=${body}`;
 
-    if (!user || !pass || !contacts.length || !portfolio.base64) {
-        alert("Remplis tous les champs (Email, Pass, CSV et PDF) !");
-        return;
-    }
-
-    log.innerHTML = "Début de l'envoi...<br>";
-
-    for (let i = 0; i < contacts.length; i++) {
-        const c = contacts[i];
-        const body = document.getElementById('mail-body').value.replace('{{prenom}}', c.name).replace('{{entreprise}}', c.company);
-        
-        try {
-            const result = await Email.send({
-                Host: "smtp.gmail.com",
-                Username: user,
-                Password: pass,
-                To: c.email,
-                From: user,
-                Subject: `Candidature — ${c.company}`,
-                Body: body.replace(/\n/g, '<br>'),
-                Port: 587,
-                Attachments: [{ name: portfolio.name, data: "data:application/pdf;base64," + portfolio.base64 }]
-            });
-
-            if (result === "OK") {
-                log.innerHTML += `<span class="success">✅ Envoyé à ${c.email}</span><br>`;
-            } else {
-                log.innerHTML += `<span class="error">❌ Erreur ${c.email} : ${result}</span><br>`;
-            }
-        } catch (err) {
-            log.innerHTML += `<span class="error">❌ Échec critique ${c.email}</span><br>`;
-        }
-        
-        // Pause pour ne pas saturer Gmail
-        await new Promise(r => setTimeout(r, 2000));
-    }
-    log.innerHTML += "<b>Terminé !</b>";
+        const row = document.createElement('div');
+        row.className = 'contact-row';
+        row.innerHTML = `
+            <span>${c.company} (${c.email})</span>
+            <a href="${mailto}" class="btn-open" onclick="this.style.background='#ccc'">OUVRIR GMAIL</a>
+        `;
+        list.appendChild(row);
+    });
 }
 </script>
 </body>
