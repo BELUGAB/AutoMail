@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Candidatures Auto</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://smtpjs.com/v3/smtp.js"></script>
 <style>
   :root {
     --bg: #f5f0e8;
@@ -295,101 +296,6 @@
     transition: width 0.4s;
   }
 
-  /* GMAIL AUTH */
-  .gmail-block {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg);
-    margin-bottom: 20px;
-  }
-  .gmail-icon { font-size: 1.8rem; }
-  .gmail-info { flex: 1; }
-  .gmail-info strong { display: block; font-size: 0.9rem; }
-  .gmail-info small { color: var(--ink-2); font-size: 0.8rem; }
-  .gmail-status { font-size: 0.82rem; font-weight: 500; }
-  .gmail-status.connected { color: var(--success); }
-  .gmail-status.disconnected { color: var(--warn); }
-
-  /* PREVIEW MODAL */
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(26,22,18,0.6);
-    z-index: 100;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    backdrop-filter: blur(2px);
-  }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius);
-    max-width: 600px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-  }
-  .modal-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .modal-header h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; }
-  .modal-body { padding: 24px; }
-  .email-preview {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-top: 12px;
-  }
-  .email-preview .ep-row { display: flex; gap: 12px; font-size: 0.83rem; margin-bottom: 8px; }
-  .email-preview .ep-label { color: var(--ink-2); width: 60px; flex-shrink: 0; font-weight: 500; }
-  .email-preview .ep-val { color: var(--ink); }
-  .email-preview .ep-body { margin-top: 16px; white-space: pre-wrap; font-size: 0.87rem; line-height: 1.7; color: var(--ink); border-top: 1px solid var(--border); padding-top: 16px; }
-
-  .info-box {
-    background: #fff9f5;
-    border: 1px solid var(--accent-2);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    font-size: 0.83rem;
-    color: var(--ink);
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  .info-box strong { color: var(--accent); }
-
-  .nav-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    gap: 12px;
-  }
-  .counter {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    color: var(--ink-2);
-  }
-  .sending-log {
-    margin-top: 16px;
-    max-height: 280px;
-    overflow-y: auto;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.78rem;
-    line-height: 1.8;
-  }
-  .log-ok { color: var(--success); }
-  .log-err { color: var(--warn); }
-  .log-skip { color: var(--ink-2); }
-
-  .hidden { display: none !important; }
-  .separator { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
-
   /* SMTP config */
   .smtp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 600px) {
@@ -412,7 +318,6 @@
 
 <div class="container">
 
-  <!-- STEPS BAR -->
   <div class="steps">
     <div class="step-tab active" id="tab-1"><div class="num">1</div><span>Contacts CSV</span></div>
     <div class="step-tab" id="tab-2"><div class="num">2</div><span>Portfolio</span></div>
@@ -420,11 +325,10 @@
     <div class="step-tab" id="tab-4"><div class="num">4</div><span>Envoi</span></div>
   </div>
 
-  <!-- PANEL 1: CSV -->
   <div class="panel active" id="panel-1">
     <div class="card">
       <div class="card-title">Importe ta liste de contacts</div>
-      <div class="card-desc">Le fichier CSV exporté depuis ton site de recension. Il doit contenir les colonnes <strong>Email</strong> et <strong>Company Name</strong>.</div>
+      <div class="card-desc">Le fichier CSV exporté. Il doit contenir les colonnes <strong>Email</strong> et <strong>Company Name</strong>.</div>
 
       <div class="drop-zone" id="drop-csv">
         <input type="file" id="input-csv" accept=".csv">
@@ -448,7 +352,6 @@
             <tbody id="preview-body"></tbody>
           </table>
         </div>
-        <p style="font-size:0.78rem;color:var(--ink-2);margin-top:8px;">* Seuls les contacts avec une adresse email valide seront traités.</p>
       </div>
     </div>
 
@@ -458,17 +361,15 @@
     </div>
   </div>
 
-  <!-- PANEL 2: PORTFOLIO -->
   <div class="panel" id="panel-2">
     <div class="card">
       <div class="card-title">Importe ton portfolio</div>
-      <div class="card-desc">Le fichier PDF qui sera joint automatiquement à chaque e-mail envoyé.</div>
+      <div class="card-desc">Le PDF qui sera joint à chaque email.</div>
 
       <div class="drop-zone" id="drop-pdf">
         <input type="file" id="input-pdf" accept=".pdf">
         <div class="drop-icon">📎</div>
         <div class="drop-label">Glisse ton portfolio PDF ici</div>
-        <div class="drop-hint">ou clique pour choisir un fichier</div>
       </div>
       <div id="pdf-badge" class="hidden"></div>
     </div>
@@ -479,23 +380,12 @@
     </div>
   </div>
 
-  <!-- PANEL 3: MESSAGE -->
   <div class="panel" id="panel-3">
     <div class="card">
       <div class="card-title">Rédige ton message</div>
-      <div class="card-desc">Utilise les variables ci-dessous pour personnaliser chaque email. Clique dessus pour les insérer.</div>
-
-      <div class="info-box">
-        <strong>Variables disponibles :</strong><br>
-        Clique sur une variable pour l'insérer à la position du curseur dans le texte.
-      </div>
-
       <div class="var-pills" style="margin-bottom:20px;">
-        <div class="var-pills-label">Cliquer pour insérer :</div>
         <span class="var-pill" onclick="insertVar('{{prenom}}')">{{prenom}}</span>
-        <span class="var-pill" onclick="insertVar('{{nom}}')">{{nom}}</span>
         <span class="var-pill" onclick="insertVar('{{entreprise}}')">{{entreprise}}</span>
-        <span class="var-pill" onclick="insertVar('{{titre}}')">{{titre}}</span>
       </div>
 
       <div class="form-row">
@@ -505,28 +395,15 @@
 
       <div class="form-row">
         <label for="mail-subject">Objet de l'email</label>
-        <input type="text" id="mail-subject" placeholder="Candidature — Développeur créatif chez {{entreprise}}" value="Candidature — Portfolio créatif chez {{entreprise}}">
+        <input type="text" id="mail-subject" value="Candidature — Portfolio chez {{entreprise}}">
       </div>
 
       <div class="form-row">
         <label for="mail-body">Corps du message</label>
-        <textarea id="mail-body" rows="14" placeholder="Bonjour {{prenom}},
+        <textarea id="mail-body" rows="10">Bonjour {{prenom}},
 
-Je me permets de vous contacter au sujet d'une opportunité au sein de {{entreprise}}...">Bonjour {{prenom}},
-
-Je me permets de vous contacter concernant d'éventuelles opportunités au sein de {{entreprise}}.
-
-[Présente-toi brièvement ici et explique pourquoi tu t'intéresses à cette entreprise]
-
-Je vous joins mon portfolio en pièce jointe, qui illustre mes réalisations récentes.
-
-Dans l'attente de votre retour, je reste disponible pour un échange.
-
-Cordialement,
-[Ton prénom et nom]</textarea>
+Je vous contacte concernant d'éventuelles opportunités chez {{entreprise}}...</textarea>
       </div>
-
-      <button class="btn btn-ghost" onclick="showPreview()" style="margin-top:4px;">👁 Prévisualiser un exemple</button>
     </div>
 
     <div class="nav-row">
@@ -535,19 +412,9 @@ Cordialement,
     </div>
   </div>
 
-  <!-- PANEL 4: ENVOI -->
   <div class="panel" id="panel-4">
-
-    <!-- CONFIG SMTP -->
-    <div class="card" id="smtp-card">
+    <div class="card">
       <div class="card-title">Configuration SMTP</div>
-      <div class="card-desc">Entre tes identifiants email pour envoyer les mails. Tout reste sur ton navigateur, rien n'est envoyé ailleurs.</div>
-
-      <div class="info-box">
-        <strong>Gmail :</strong> Active l'<a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">authentification 2FA</a> puis crée un <strong>mot de passe d'application</strong> (16 caractères) sur ton compte Google. Utilise ce mot de passe ici, pas ton vrai mot de passe Gmail.<br><br>
-        <strong>Outlook / autre :</strong> Change le serveur SMTP ci-dessous selon ton fournisseur.
-      </div>
-
       <div class="smtp-grid">
         <div class="form-row">
           <label>Serveur SMTP</label>
@@ -555,76 +422,41 @@ Cordialement,
         </div>
         <div class="form-row">
           <label>Port</label>
-          <input type="text" id="smtp-port" value="465">
+          <input type="text" id="smtp-port" value="587">
         </div>
         <div class="form-row">
           <label>Email / Identifiant</label>
-          <input type="email" id="smtp-user" placeholder="ton.prenom@gmail.com">
+          <input type="email" id="smtp-user">
         </div>
         <div class="form-row">
           <label>Mot de passe d'application</label>
-          <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
+          <input type="password" id="smtp-pass" placeholder="16 caractères">
         </div>
-      </div>
-
-      <div class="info-box" style="margin-top:4px; background:#f0f7ff; border-color:#90c0e8;">
-        ℹ️ <strong>Limite Gmail :</strong> Gmail autorise environ <strong>500 emails/jour</strong> en gratuit. Pour des listes plus longues, envoie en plusieurs fois.
       </div>
     </div>
 
-    <!-- RÉSUMÉ -->
     <div class="card">
       <div class="card-title">Prêt à envoyer</div>
       <div id="summary" class="card-desc"></div>
-
       <div class="progress-bar hidden" id="progress-bar">
         <div class="progress-fill" id="progress-fill" style="width:0%"></div>
       </div>
-
       <div class="sending-log" id="sending-log"></div>
 
-      <div class="nav-row" style="margin-top:20px;">
+      <div class="nav-row">
         <button class="btn btn-ghost" id="btn-back-4" onclick="goTo(3)">← Retour</button>
-        <button class="btn btn-accent" id="btn-send" onclick="startSending()">
-          ✉️ Envoyer les candidatures
-        </button>
+        <button class="btn btn-accent" id="btn-send" onclick="startSending()">✉️ Envoyer</button>
       </div>
-    </div>
-  </div>
-
-</div><!-- /container -->
-
-<!-- MODAL PREVIEW -->
-<div class="modal-backdrop hidden" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Prévisualisation du message</h3>
-      <button class="btn btn-ghost" onclick="closeModal()" style="padding:6px 12px;">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:0.82rem;color:var(--ink-2);margin-bottom:12px;">Exemple avec le premier contact de ta liste :</p>
-      <div class="email-preview" id="preview-content"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ---- STATE ----
 let contacts = [];
 let portfolioFile = null;
 let portfolioBase64 = null;
-let activeStep = 1;
 
-// ---- NAVIGATION ----
 function goTo(step) {
-  // Validate
-  if (step > 1 && contacts.length === 0) { alert("Importe d'abord le fichier CSV."); return; }
-  if (step > 2 && !portfolioFile) { alert("Importe d'abord ton portfolio PDF."); return; }
-  if (step > 3) {
-    if (!document.getElementById('mail-from').value.trim()) { alert("Entre ton adresse email."); return; }
-    if (!document.getElementById('mail-body').value.trim()) { alert("Rédige ton message."); return; }
-  }
-  activeStep = step;
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + step).classList.add('active');
   document.querySelectorAll('.step-tab').forEach((t, i) => {
@@ -635,320 +467,121 @@ function goTo(step) {
   if (step === 4) updateSummary();
 }
 
-// ---- CSV ----
-const dropCsv = document.getElementById('drop-csv');
-const inputCsv = document.getElementById('input-csv');
-
-dropCsv.addEventListener('dragover', e => { e.preventDefault(); dropCsv.classList.add('dragover'); });
-dropCsv.addEventListener('dragleave', () => dropCsv.classList.remove('dragover'));
-dropCsv.addEventListener('drop', e => {
-  e.preventDefault();
-  dropCsv.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) loadCsv(e.dataTransfer.files[0]);
-});
-inputCsv.addEventListener('change', e => { if (e.target.files[0]) loadCsv(e.target.files[0]); });
-
-function loadCsv(file) {
+// CSV Logic
+document.getElementById('input-csv').addEventListener('change', e => {
+  const file = e.target.files[0];
   const reader = new FileReader();
   reader.onload = e => {
-    try {
-      contacts = parseCSV(e.target.result);
-      renderPreview();
-      document.getElementById('csv-badge').innerHTML = `<span class="file-badge">✅ ${file.name}</span>`;
-      document.getElementById('csv-badge').classList.remove('hidden');
-      document.getElementById('btn-next-1').disabled = false;
-    } catch(err) {
-      alert("Erreur lors de la lecture du CSV : " + err.message);
-    }
-  };
-  reader.readAsText(file, 'UTF-8');
-}
+    const text = e.target.result;
+    const lines = text.split('\n');
+    const sep = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,''));
+    
+    const emailIdx = headers.indexOf('Email');
+    const compIdx = headers.indexOf('Company Name');
+    const firstIdx = headers.indexOf('First Name');
 
-function parseCSV(text) {
-  const lines = text.trim().split('\n');
-  const sep = lines[0].includes(';') ? ';' : ',';
-  const headers = lines[0].split(sep).map(h => h.replace(/"/g,'').trim());
-
-  const colIdx = {};
-  headers.forEach((h, i) => { colIdx[h] = i; });
-
-  const required = ['Email', 'Company Name'];
-  for (const r of required) {
-    if (colIdx[r] === undefined) throw new Error(`Colonne "${r}" introuvable. Colonnes trouvées : ${headers.join(', ')}`);
-  }
-
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const cells = splitCSVLine(lines[i], sep);
-    const get = (col) => (colIdx[col] !== undefined ? (cells[colIdx[col]] || '').replace(/"/g,'').trim() : '');
-    rows.push({
-      firstName: get('First Name'),
-      lastName: get('Last Name'),
-      title: get('Title'),
-      company: get('Company Name'),
-      email: get('Email'),
-      valid: isValidEmail(get('Email'))
+    contacts = lines.slice(1).filter(l => l.trim()).map(line => {
+      const cells = line.split(sep).map(c => c.trim().replace(/"/g,''));
+      return {
+        email: cells[emailIdx],
+        company: cells[compIdx] || 'votre entreprise',
+        firstName: cells[firstIdx] || 'Madame, Monsieur',
+        valid: cells[emailIdx] && cells[emailIdx].includes('@')
+      };
     });
-  }
-  return rows;
-}
 
-function splitCSVLine(line, sep) {
-  const result = [];
-  let cur = '';
-  let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === sep && !inQ) { result.push(cur); cur = ''; }
-    else { cur += c; }
-  }
-  result.push(cur);
-  return result;
-}
-
-function isValidEmail(e) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-}
+    renderPreview();
+    document.getElementById('csv-badge').innerHTML = `<span class="file-badge">✅ ${file.name}</span>`;
+    document.getElementById('csv-badge').classList.remove('hidden');
+    document.getElementById('btn-next-1').disabled = false;
+  };
+  reader.readAsText(file);
+});
 
 function renderPreview() {
   const tbody = document.getElementById('preview-body');
-  tbody.innerHTML = '';
-  let valid = 0;
-  contacts.forEach(c => {
-    if (c.valid) valid++;
-    const tr = document.createElement('tr');
-    let badge = c.valid
-      ? '<span class="badge badge-pending">À envoyer</span>'
-      : '<span class="badge badge-noemail">Pas d\'email</span>';
-    tr.innerHTML = `
-      <td>${c.firstName}</td>
-      <td>${c.lastName}</td>
-      <td class="company-col">${c.company}</td>
-      <td class="email-col">${c.email || '—'}</td>
-      <td>${badge}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-  document.getElementById('csv-count').textContent = `${contacts.length} contacts • ${valid} avec email`;
+  tbody.innerHTML = contacts.slice(0, 5).map(c => `
+    <tr>
+      <td>${c.firstName}</td><td>-</td><td>${c.company}</td><td>${c.email}</td>
+      <td><span class="badge ${c.valid ? 'badge-pending' : 'badge-noemail'}">${c.valid ? 'Prêt' : 'Erreur'}</span></td>
+    </tr>
+  `).join('');
+  document.getElementById('csv-count').textContent = `${contacts.length} contacts`;
   document.getElementById('csv-preview').classList.remove('hidden');
 }
 
-// ---- PDF ----
-const dropPdf = document.getElementById('drop-pdf');
-const inputPdf = document.getElementById('input-pdf');
-
-dropPdf.addEventListener('dragover', e => { e.preventDefault(); dropPdf.classList.add('dragover'); });
-dropPdf.addEventListener('dragleave', () => dropPdf.classList.remove('dragover'));
-dropPdf.addEventListener('drop', e => {
-  e.preventDefault();
-  dropPdf.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) loadPdf(e.dataTransfer.files[0]);
-});
-inputPdf.addEventListener('change', e => { if (e.target.files[0]) loadPdf(e.target.files[0]); });
-
-function loadPdf(file) {
-  if (!file.name.toLowerCase().endsWith('.pdf')) { alert("Le fichier doit être un PDF."); return; }
+// PDF Logic
+document.getElementById('input-pdf').addEventListener('change', e => {
+  const file = e.target.files[0];
   portfolioFile = file;
   const reader = new FileReader();
   reader.onload = e => {
     portfolioBase64 = e.target.result.split(',')[1];
-    const size = (file.size / 1024).toFixed(0) + ' Ko';
-    document.getElementById('pdf-badge').innerHTML = `<span class="file-badge">✅ ${file.name} (${size})</span>`;
+    document.getElementById('pdf-badge').innerHTML = `<span class="file-badge">✅ ${file.name}</span>`;
     document.getElementById('pdf-badge').classList.remove('hidden');
     document.getElementById('btn-next-2').disabled = false;
   };
   reader.readAsDataURL(file);
-}
+});
 
-// ---- TEMPLATE VARIABLES ----
 function insertVar(v) {
   const ta = document.getElementById('mail-body');
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
-  ta.selectionStart = ta.selectionEnd = start + v.length;
+  ta.value += v;
   ta.focus();
 }
 
 function applyTemplate(tpl, contact) {
-  return tpl
-    .replace(/\{\{prenom\}\}/g, contact.firstName || '')
-    .replace(/\{\{nom\}\}/g, contact.lastName || '')
-    .replace(/\{\{entreprise\}\}/g, contact.company || '')
-    .replace(/\{\{titre\}\}/g, contact.title || '');
+  return tpl.replace(/\{\{prenom\}\}/g, contact.firstName).replace(/\{\{entreprise\}\}/g, contact.company);
 }
 
-// ---- PREVIEW ----
-function showPreview() {
-  const sample = contacts.find(c => c.valid) || contacts[0] || {
-    firstName: 'Marie', lastName: 'Dupont', company: 'TechCorp', title: 'RH Manager', email: 'marie@techcorp.com'
-  };
-  const subject = applyTemplate(document.getElementById('mail-subject').value, sample);
-  const body = applyTemplate(document.getElementById('mail-body').value, sample);
-  const from = document.getElementById('mail-from').value || 'ton@email.com';
-
-  document.getElementById('preview-content').innerHTML = `
-    <div class="ep-row"><span class="ep-label">De</span><span class="ep-val">${escHtml(from)}</span></div>
-    <div class="ep-row"><span class="ep-label">À</span><span class="ep-val">${escHtml(sample.email || 'contact@entreprise.com')}</span></div>
-    <div class="ep-row"><span class="ep-label">Objet</span><span class="ep-val">${escHtml(subject)}</span></div>
-    <div class="ep-row"><span class="ep-label">Pièce</span><span class="ep-val">📎 ${portfolioFile ? portfolioFile.name : 'portfolio.pdf'}</span></div>
-    <div class="ep-body">${escHtml(body)}</div>
-  `;
-  document.getElementById('modal').classList.remove('hidden');
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ---- SUMMARY ----
 function updateSummary() {
   const valid = contacts.filter(c => c.valid).length;
-  const skip = contacts.length - valid;
-  const subj = document.getElementById('mail-subject').value;
-  document.getElementById('summary').innerHTML = `
-    <strong>${valid} emails</strong> vont être envoyés depuis <strong>${document.getElementById('mail-from').value || '?'}</strong>.<br>
-    ${skip > 0 ? `<span style="color:var(--ink-2)">${skip} contact(s) ignoré(s) (pas d'email valide).</span><br>` : ''}
-    Chaque email contiendra le portfolio <strong>${portfolioFile ? portfolioFile.name : '?'}</strong> en pièce jointe.
-  `;
+  document.getElementById('summary').innerHTML = `Prêt à envoyer <strong>${valid} emails</strong> avec <strong>${portfolioFile?.name}</strong>.`;
 }
 
-// ---- SENDING (via EmailJS proxy / backend) ----
-// Since we can't directly send SMTP from browser (CORS), we'll use a
-// server-sent approach using a simple PHP/Node or the free EmailJS service.
-// Here we implement a real mailto: fallback + EmailJS integration option.
-
-let isSending = false;
-let results = [];
-
+// SENDING LOGIC
 async function startSending() {
-  if (isSending) return;
+  const smtpHost = document.getElementById('smtp-host').value;
+  const smtpPort = document.getElementById('smtp-port').value;
+  const smtpUser = document.getElementById('smtp-user').value;
+  const smtpPass = document.getElementById('smtp-pass').value.replace(/\s/g, '');
+  const fromEmail = document.getElementById('mail-from').value;
 
-  const smtpHost = document.getElementById('smtp-host').value.trim();
-  const smtpPort = document.getElementById('smtp-port').value.trim();
-  const smtpUser = document.getElementById('smtp-user').value.trim();
-  const smtpPass = document.getElementById('smtp-pass').value.trim();
-  const fromEmail = document.getElementById('mail-from').value.trim();
-
-  if (!smtpUser || !smtpPass) { alert("Entre tes identifiants SMTP pour envoyer les emails."); return; }
-  if (!fromEmail) { alert("Entre ton adresse email expéditeur à l'étape 3."); return; }
+  if (!smtpPass || !smtpUser) { alert("Identifiants SMTP manquants"); return; }
 
   const toSend = contacts.filter(c => c.valid);
-  if (toSend.length === 0) { alert("Aucun contact avec une adresse email valide."); return; }
-
-  isSending = true;
-  document.getElementById('btn-send').disabled = true;
-  document.getElementById('btn-back-4').disabled = true;
   document.getElementById('progress-bar').classList.remove('hidden');
   const log = document.getElementById('sending-log');
-  log.innerHTML = '';
-  results = [];
-
-  const subject = document.getElementById('mail-subject').value;
-  const body = document.getElementById('mail-body').value;
-
-  // We use the free smtp2go / mailersend / sendinblue API approach
-  // Since direct SMTP is blocked in browser, we use a relay approach
-  // We'll send via a simple SMTP bridge we'll call through fetch
-  // For a standalone HTML file, the best approach is EmailJS (free tier: 200 emails/month)
-  // OR generate EML files for the user to send manually
-  // Here we implement BOTH options
-
-  const USE_EMAILJS = false; // Set to true if user configures EmailJS
-
-  for (let idx = 0; idx < toSend.length; idx++) {
-    const contact = toSend[idx];
-    const pct = Math.round(((idx) / toSend.length) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-
-    const personalizedSubject = applyTemplate(subject, contact);
-    const personalizedBody = applyTemplate(body, contact);
-
+  
+  for (let i = 0; i < toSend.length; i++) {
+    const contact = toSend[i];
     try {
       await sendViaSmtp({
-        host: smtpHost, port: smtpPort,
-        user: smtpUser, pass: smtpPass,
+        host: smtpHost, port: smtpPort, user: smtpUser, pass: smtpPass,
         from: fromEmail, to: contact.email,
-        subject: personalizedSubject,
-        body: personalizedBody,
-        portfolioBase64, portfolioName: portfolioFile ? portfolioFile.name : 'portfolio.pdf'
+        subject: applyTemplate(document.getElementById('mail-subject').value, contact),
+        body: applyTemplate(document.getElementById('mail-body').value, contact),
+        portfolioBase64, portfolioName: portfolioFile.name
       });
-
-      results.push({ ...contact, status: 'sent' });
-      log.innerHTML += `<div class="log-ok">✅ ${contact.firstName} ${contact.lastName} &lt;${contact.email}&gt; — ${contact.company}</div>`;
+      log.innerHTML += `<div class="log-ok">✅ Envoyé à ${contact.email}</div>`;
     } catch (err) {
-      results.push({ ...contact, status: 'error', error: err.message });
-      log.innerHTML += `<div class="log-err">❌ ${contact.email} — ${err.message}</div>`;
+      log.innerHTML += `<div class="log-err">❌ Erreur ${contact.email} : ${err.message}</div>`;
     }
-
-    log.scrollTop = log.scrollHeight;
-    // Small delay to avoid rate limiting
-    if (idx < toSend.length - 1) await sleep(800);
+    document.getElementById('progress-fill').style.width = ((i+1)/toSend.length*100) + '%';
+    await new Promise(r => setTimeout(r, 1000));
   }
-
-  document.getElementById('progress-fill').style.width = '100%';
-  const sent = results.filter(r => r.status === 'sent').length;
-  const errors = results.filter(r => r.status === 'error').length;
-  log.innerHTML += `<br><div style="font-weight:500;color:var(--ink)">— Terminé : ${sent} envoyés, ${errors} erreur(s) —</div>`;
-
-  document.getElementById('btn-send').textContent = '✅ Envoi terminé';
-  isSending = false;
 }
 
 async function sendViaSmtp(params) {
-  // Direct SMTP from browser is impossible due to browser security.
-  // We use the smtpjs.com library (loads dynamically) as a bridge.
-  // smtpjs.com encrypts credentials client-side and relays through their servers.
-
-  if (!window.Email) {
-    await loadScript('https://smtpjs.com/v3/smtp.js');
-  }
-
-  return new Promise((resolve, reject) => {
-    // Build MIME with base64 PDF attachment
-    window.Email.send({
-      SecureToken: '', // left empty — we use direct credentials
-      Host: params.host,
-      Username: params.user,
-      Password: params.pass,
-      Port: parseInt(params.port),
-      To: params.to,
-      From: params.from,
-      Subject: params.subject,
-      Body: params.body.replace(/\n/g, '<br>'),
-      Attachments: params.portfolioBase64 ? [{
-        name: params.portfolioName,
-        data: 'data:application/pdf;base64,' + params.portfolioBase64
-      }] : []
-    }).then(message => {
-      if (message === 'OK') resolve();
-      else reject(new Error(message));
-    }).catch(err => reject(new Error(String(err))));
-  });
+  if (!window.Email) throw new Error("Librairie SMTP non chargée");
+  return window.Email.send({
+    Host: params.host, Username: params.user, Password: params.pass, Port: params.port,
+    To: params.to, From: params.from, Subject: params.subject,
+    Body: params.body.replace(/\n/g, '<br>'),
+    Attachments: [{ name: params.portfolioName, data: "data:application/pdf;base64," + params.portfolioBase64 }]
+  }).then(msg => msg === 'OK' ? Promise.resolve() : Promise.reject(new Error(msg)));
 }
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error('Impossible de charger la librairie SMTP. Vérifie ta connexion internet.'));
-    document.head.appendChild(s);
-  });
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// Close modal on backdrop click
-document.getElementById('modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 </script>
 </body>
 </html>
