@@ -1,589 +1,132 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Candidatures Auto</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script>
-// Code officiel de SMTPJS intégré pour éviter les erreurs CORS
-var Email = { send: function (a) { return new Promise(function (n, e) { a.nocache = Math.floor(1e6 * Math.random() + 1), a.Action = "Send"; var t = JSON.stringify(a); Email.ajaxPost("https://smtpjs.com/v1/smtp.js", t, function (e) { n(e) }) }) }, ajaxPost: function (e, n, t) { var a = Email.createCORSRequest("POST", e); a.setRequestHeader("Content-type", "application/x-www-form-urlencoded"), a.onload = function () { var e = a.responseText; null != t && t(e) }, a.send(n) }, ajax: function (e, n) { var t = Email.createCORSRequest("GET", e); t.onload = function () { var e = t.responseText; null != n && n(e) }, t.send() }, createCORSRequest: function (e, n) { var t = new XMLHttpRequest; return "withCredentials" in t ? t.open(e, n, !0) : "undefined" != typeof XDomainRequest ? (t = new XDomainRequest).open(e, n) : t = null, t } };
-</script>
-<style>
-  :root {
-    --bg: #f5f0e8;
-    --surface: #fffdf7;
-    --ink: #1a1612;
-    --ink-2: #5c5347;
-    --accent: #c94f2b;
-    --accent-2: #e8a87c;
-    --border: #d4cdc2;
-    --success: #2d6a4f;
-    --warn: #c94f2b;
-    --radius: 4px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--ink);
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  /* HEADER */
-  header {
-    background: var(--ink);
-    color: var(--bg);
-    padding: 18px 40px;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-  }
-  header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.5rem;
-    font-style: italic;
-    letter-spacing: -0.5px;
-  }
-  header span {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--accent-2);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* LAYOUT */
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-  }
-
-  /* STEPS */
-  .steps {
-    display: flex;
-    gap: 0;
-    margin-bottom: 40px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .step-tab {
-    flex: 1;
-    padding: 14px 8px;
-    text-align: center;
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--ink-2);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    cursor: default;
-    transition: background 0.2s, color 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .step-tab:last-child { border-right: none; }
-  .step-tab .num {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    flex-shrink: 0;
-  }
-  .step-tab.active { background: var(--ink); color: var(--bg); }
-  .step-tab.active .num { border-color: var(--accent-2); color: var(--accent-2); }
-  .step-tab.done { background: var(--success); color: white; }
-  .step-tab.done .num { border-color: white; color: white; }
-
-  /* PANELS */
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* CARD */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 32px;
-    margin-bottom: 20px;
-  }
-  .card-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.35rem;
-    margin-bottom: 6px;
-    color: var(--ink);
-  }
-  .card-desc {
-    font-size: 0.85rem;
-    color: var(--ink-2);
-    margin-bottom: 24px;
-    line-height: 1.6;
-  }
-
-  /* DROP ZONE */
-  .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--bg);
-    position: relative;
-  }
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent);
-    background: #fdf5ee;
-  }
-  .drop-zone input[type=file] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-  .drop-icon { font-size: 2.2rem; margin-bottom: 10px; }
-  .drop-label { font-weight: 500; color: var(--ink); margin-bottom: 4px; }
-  .drop-hint { font-size: 0.8rem; color: var(--ink-2); }
-
-  .file-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #edf7f1;
-    border: 1px solid #a8d5b5;
-    color: var(--success);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    margin-top: 12px;
-  }
-
-  /* FORM */
-  label {
-    display: block;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--ink-2);
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
-  }
-  input[type=text], input[type=email], textarea, select {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    background: var(--bg);
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.15s;
-    resize: vertical;
-  }
-  input:focus, textarea:focus {
-    border-color: var(--accent);
-  }
-  .form-row { margin-bottom: 20px; }
-  .var-pill {
-    display: inline-block;
-    background: #fff3ee;
-    border: 1px solid var(--accent-2);
-    color: var(--accent);
-    border-radius: 3px;
-    padding: 1px 7px;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    cursor: pointer;
-    margin: 2px;
-    transition: background 0.15s;
-  }
-  .var-pill:hover { background: #ffe5d5; }
-  .var-pills { margin-top: 6px; }
-  .var-pills-label { font-size: 0.75rem; color: var(--ink-2); margin-bottom: 4px; }
-
-  /* BUTTONS */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: var(--radius);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-  .btn-primary {
-    background: var(--ink);
-    color: var(--bg);
-  }
-  .btn-primary:hover { background: #2d2520; }
-  .btn-accent {
-    background: var(--accent);
-    color: white;
-  }
-  .btn-accent:hover { background: #b03d1f; }
-  .btn-ghost {
-    background: transparent;
-    color: var(--ink-2);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: var(--bg); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* TABLE PREVIEW */
-  .table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-top: 16px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.83rem;
-  }
-  th {
-    background: var(--ink);
-    color: var(--bg);
-    padding: 10px 14px;
-    text-align: left;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-  }
-  td {
-    padding: 9px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--ink);
-  }
-  tr:last-child td { border-bottom: none; }
-  tr:nth-child(even) td { background: #faf8f3; }
-  .email-col { color: var(--ink-2); font-family: 'DM Mono', monospace; font-size: 0.78rem; }
-  .company-col { font-weight: 500; }
-
-  /* STATUS BADGES */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 500;
-  }
-  .badge-pending { background: #f5f0e8; color: var(--ink-2); border: 1px solid var(--border); }
-  .badge-sending { background: #fff3e0; color: #e65100; }
-  .badge-sent { background: #edf7f1; color: var(--success); }
-  .badge-error { background: #fce8e6; color: #c62828; }
-  .badge-noemail { background: #f3e5f5; color: #7b1fa2; }
-
-  /* PROGRESS BAR */
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-    margin: 16px 0;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--success);
-    border-radius: 3px;
-    transition: width 0.4s;
-  }
-
-  /* SMTP config */
-  .smtp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 600px) {
-    .smtp-grid { grid-template-columns: 1fr; }
-    header { padding: 14px 20px; }
-    .container { padding: 24px 16px 60px; }
-    .card { padding: 20px; }
-    header h1 { font-size: 1.1rem; }
-    .step-tab { font-size: 0.7rem; padding: 10px 4px; }
-    .step-tab .num { width: 18px; height: 18px; font-size: 0.62rem; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <title>Candidatures Auto — Version Finale</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #f5f0e8; --surface: #fffdf7; --ink: #1a1612; --accent: #c94f2b; --border: #d4cdc2; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 20px; }
+        .card { max-width: 650px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; margin-top: 15px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .drop-zone { border: 2px dashed var(--border); padding: 20px; text-align: center; cursor: pointer; background: #fafafa; margin-top: 10px; }
+        .btn-send { width: 100%; padding: 15px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        #log { margin-top: 20px; font-size: 0.8rem; max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border: 1px solid #eee; }
+        .success { color: green; } .error { color: red; }
+    </style>
 </head>
 <body>
 
-<header>
-  <h1>Candidatures Auto</h1>
-  <span>Outil d'envoi personnalisé</span>
-</header>
+<div class="card">
+    <h1>Envoi Automatique</h1>
+    
+    <label>Ton Gmail</label>
+    <input type="email" id="smtp-user" placeholder="ton-email@gmail.com">
+    
+    <label>Code Application (16 lettres)</label>
+    <input type="password" id="smtp-pass" placeholder="xxxx xxxx xxxx xxxx">
 
-<div class="container">
-
-  <div class="steps">
-    <div class="step-tab active" id="tab-1"><div class="num">1</div><span>Contacts CSV</span></div>
-    <div class="step-tab" id="tab-2"><div class="num">2</div><span>Portfolio</span></div>
-    <div class="step-tab" id="tab-3"><div class="num">3</div><span>Message</span></div>
-    <div class="step-tab" id="tab-4"><div class="num">4</div><span>Envoi</span></div>
-  </div>
-
-  <div class="panel active" id="panel-1">
-    <div class="card">
-      <div class="card-title">Importe ta liste de contacts</div>
-      <div class="card-desc">Le fichier CSV exporté. Il doit contenir les colonnes <strong>Email</strong> et <strong>Company Name</strong>.</div>
-
-      <div class="drop-zone" id="drop-csv">
-        <input type="file" id="input-csv" accept=".csv">
-        <div class="drop-icon">📋</div>
-        <div class="drop-label">Glisse ton fichier CSV ici</div>
-        <div class="drop-hint">ou clique pour choisir un fichier</div>
-      </div>
-      <div id="csv-badge" class="hidden"></div>
-
-      <div id="csv-preview" class="hidden">
-        <hr class="separator">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <strong style="font-size:0.9rem;">Aperçu des contacts</strong>
-          <span class="counter" id="csv-count">— contacts</span>
-        </div>
-        <div class="table-wrap">
-          <table id="preview-table">
-            <thead><tr>
-              <th>Prénom</th><th>Nom</th><th>Entreprise</th><th>Email</th><th>Statut</th>
-            </tr></thead>
-            <tbody id="preview-body"></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="drop-zone" onclick="document.getElementById('csv-in').click()">
+        <input type="file" id="csv-in" accept=".csv" hidden>
+        <div id="csv-label">📁 Charger le fichier CSV</div>
     </div>
 
-    <div class="nav-row">
-      <div></div>
-      <button class="btn btn-primary" id="btn-next-1" disabled onclick="goTo(2)">Suivant →</button>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-2">
-    <div class="card">
-      <div class="card-title">Importe ton portfolio</div>
-      <div class="card-desc">Le PDF qui sera joint à chaque email.</div>
-
-      <div class="drop-zone" id="drop-pdf">
-        <input type="file" id="input-pdf" accept=".pdf">
-        <div class="drop-icon">📎</div>
-        <div class="drop-label">Glisse ton portfolio PDF ici</div>
-      </div>
-      <div id="pdf-badge" class="hidden"></div>
+    <div class="drop-zone" onclick="document.getElementById('pdf-in').click()">
+        <input type="file" id="pdf-in" accept=".pdf" hidden>
+        <div id="pdf-label">📎 Charger le Portfolio PDF</div>
     </div>
 
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goTo(1)">← Retour</button>
-      <button class="btn btn-primary" id="btn-next-2" disabled onclick="goTo(3)">Suivant →</button>
-    </div>
-  </div>
+    <label>Message</label>
+    <textarea id="mail-body" rows="5">Bonjour {{prenom}}, voici mon portfolio pour {{entreprise}}.</textarea>
 
-  <div class="panel" id="panel-3">
-    <div class="card">
-      <div class="card-title">Rédige ton message</div>
-      <div class="var-pills" style="margin-bottom:20px;">
-        <span class="var-pill" onclick="insertVar('{{prenom}}')">{{prenom}}</span>
-        <span class="var-pill" onclick="insertVar('{{entreprise}}')">{{entreprise}}</span>
-      </div>
+    <button class="btn-send" onclick="startSending()">🚀 LANCER L'ENVOI AUTOMATIQUE</button>
 
-      <div class="form-row">
-        <label for="mail-from">Ton adresse email (expéditeur)</label>
-        <input type="email" id="mail-from" placeholder="ton.prenom@gmail.com">
-      </div>
-
-      <div class="form-row">
-        <label for="mail-subject">Objet de l'email</label>
-        <input type="text" id="mail-subject" value="Candidature — Portfolio chez {{entreprise}}">
-      </div>
-
-      <div class="form-row">
-        <label for="mail-body">Corps du message</label>
-        <textarea id="mail-body" rows="10">Bonjour {{prenom}},
-
-Je vous contacte concernant d'éventuelles opportunités chez {{entreprise}}...</textarea>
-      </div>
-    </div>
-
-    <div class="nav-row">
-      <button class="btn btn-ghost" onclick="goTo(2)">← Retour</button>
-      <button class="btn btn-primary" id="btn-next-3" onclick="goTo(4)">Suivant →</button>
-    </div>
-  </div>
-
-  <div class="panel" id="panel-4">
-    <div class="card">
-      <div class="card-title">Configuration SMTP</div>
-      <div class="smtp-grid">
-        <div class="form-row">
-          <label>Serveur SMTP</label>
-          <input type="text" id="smtp-host" value="smtp.gmail.com">
-        </div>
-        <div class="form-row">
-          <label>Port</label>
-          <input type="text" id="smtp-port" value="587">
-        </div>
-        <div class="form-row">
-          <label>Email / Identifiant</label>
-          <input type="email" id="smtp-user">
-        </div>
-        <div class="form-row">
-          <label>Mot de passe d'application</label>
-          <input type="password" id="smtp-pass" placeholder="16 caractères">
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Prêt à envoyer</div>
-      <div id="summary" class="card-desc"></div>
-      <div class="progress-bar hidden" id="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-      <div class="sending-log" id="sending-log"></div>
-
-      <div class="nav-row">
-        <button class="btn btn-ghost" id="btn-back-4" onclick="goTo(3)">← Retour</button>
-        <button class="btn btn-accent" id="btn-send" onclick="startSending()">✉️ Envoyer</button>
-      </div>
-    </div>
-  </div>
+    <div id="log">En attente...</div>
 </div>
 
 <script>
+// --- LIBRAIRIE SMTPJS INTÉGRÉE (Pour éviter l'erreur de chargement) ---
+var Email = { send: function (a) { return new Promise(function (n, e) { a.nocache = Math.floor(1e6 * Math.random() + 1), a.Action = "Send"; var t = JSON.stringify(a); Email.ajaxPost("https://smtpjs.com/v1/smtp.js", t, function (e) { n(e) }) }) }, ajaxPost: function (e, n, t) { var a = Email.createCORSRequest("POST", e); a.setRequestHeader("Content-type", "application/x-www-form-urlencoded"), a.onload = function () { var e = a.responseText; null != t && t(e) }, a.send(n) }, ajax: function (e, n) { var t = Email.createCORSRequest("GET", e); t.onload = function () { var e = t.responseText; null != n && n(e) }, t.send() }, createCORSRequest: function (e, n) { var t = new XMLHttpRequest; return "withCredentials" in t ? t.open(e, n, !0) : "undefined" != typeof XDomainRequest ? (t = new XDomainRequest).open(e, n) : t = null, t } };
+
 let contacts = [];
-let portfolioFile = null;
-let portfolioBase64 = null;
+let portfolio = { base64: "", name: "" };
 
-function goTo(step) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + step).classList.add('active');
-  document.querySelectorAll('.step-tab').forEach((t, i) => {
-    t.classList.remove('active', 'done');
-    if (i + 1 < step) t.classList.add('done');
-    else if (i + 1 === step) t.classList.add('active');
-  });
-  if (step === 4) updateSummary();
-}
+// Lecture CSV
+document.getElementById('csv-in').onchange = e => {
+    const reader = new FileReader();
+    reader.onload = () => {
+        const lines = reader.result.split('\n');
+        const sep = lines[0].includes(';') ? ';' : ',';
+        const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,''));
+        const emailIdx = headers.indexOf('Email');
+        const compIdx = headers.indexOf('Company Name');
+        const firstIdx = headers.indexOf('First Name');
 
-// CSV Logic
-document.getElementById('input-csv').addEventListener('change', e => {
-  const file = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    const lines = text.split('\n');
-    const sep = lines[0].includes(';') ? ';' : ',';
-    const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,''));
-    
-    const emailIdx = headers.indexOf('Email');
-    const compIdx = headers.indexOf('Company Name');
-    const firstIdx = headers.indexOf('First Name');
+        contacts = lines.slice(1).filter(l => l.trim()).map(line => {
+            const cells = line.split(sep).map(c => c.trim().replace(/"/g,''));
+            return { email: cells[emailIdx], company: cells[compIdx] || "votre entreprise", name: cells[firstIdx] || "Madame, Monsieur" };
+        }).filter(c => c.email && c.email.includes('@'));
+        document.getElementById('csv-label').innerText = `✅ ${contacts.length} contacts chargés`;
+    };
+    reader.readAsText(e.target.files[0]);
+};
 
-    contacts = lines.slice(1).filter(l => l.trim()).map(line => {
-      const cells = line.split(sep).map(c => c.trim().replace(/"/g,''));
-      return {
-        email: cells[emailIdx],
-        company: cells[compIdx] || 'votre entreprise',
-        firstName: cells[firstIdx] || 'Madame, Monsieur',
-        valid: cells[emailIdx] && cells[emailIdx].includes('@')
-      };
-    });
+// Lecture PDF
+document.getElementById('pdf-in').onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+        portfolio.base64 = reader.result.split(',')[1];
+        portfolio.name = file.name;
+        document.getElementById('pdf-label').innerText = `✅ PDF prêt : ${file.name}`;
+    };
+    reader.readAsDataURL(file);
+};
 
-    renderPreview();
-    document.getElementById('csv-badge').innerHTML = `<span class="file-badge">✅ ${file.name}</span>`;
-    document.getElementById('csv-badge').classList.remove('hidden');
-    document.getElementById('btn-next-1').disabled = false;
-  };
-  reader.readAsText(file);
-});
-
-function renderPreview() {
-  const tbody = document.getElementById('preview-body');
-  tbody.innerHTML = contacts.slice(0, 5).map(c => `
-    <tr>
-      <td>${c.firstName}</td><td>-</td><td>${c.company}</td><td>${c.email}</td>
-      <td><span class="badge ${c.valid ? 'badge-pending' : 'badge-noemail'}">${c.valid ? 'Prêt' : 'Erreur'}</span></td>
-    </tr>
-  `).join('');
-  document.getElementById('csv-count').textContent = `${contacts.length} contacts`;
-  document.getElementById('csv-preview').classList.remove('hidden');
-}
-
-// PDF Logic
-document.getElementById('input-pdf').addEventListener('change', e => {
-  const file = e.target.files[0];
-  portfolioFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    portfolioBase64 = e.target.result.split(',')[1];
-    document.getElementById('pdf-badge').innerHTML = `<span class="file-badge">✅ ${file.name}</span>`;
-    document.getElementById('pdf-badge').classList.remove('hidden');
-    document.getElementById('btn-next-2').disabled = false;
-  };
-  reader.readAsDataURL(file);
-});
-
-function insertVar(v) {
-  const ta = document.getElementById('mail-body');
-  ta.value += v;
-  ta.focus();
-}
-
-function applyTemplate(tpl, contact) {
-  return tpl.replace(/\{\{prenom\}\}/g, contact.firstName).replace(/\{\{entreprise\}\}/g, contact.company);
-}
-
-function updateSummary() {
-  const valid = contacts.filter(c => c.valid).length;
-  document.getElementById('summary').innerHTML = `Prêt à envoyer <strong>${valid} emails</strong> avec <strong>${portfolioFile?.name}</strong>.`;
-}
-
-// SENDING LOGIC
 async function startSending() {
-  const smtpHost = document.getElementById('smtp-host').value;
-  const smtpPort = document.getElementById('smtp-port').value;
-  const smtpUser = document.getElementById('smtp-user').value;
-  const smtpPass = document.getElementById('smtp-pass').value.replace(/\s/g, '');
-  const fromEmail = document.getElementById('mail-from').value;
+    const user = document.getElementById('smtp-user').value.trim();
+    const pass = document.getElementById('smtp-pass').value.replace(/\s/g, '');
+    const log = document.getElementById('log');
 
-  if (!smtpPass || !smtpUser) { alert("Identifiants SMTP manquants"); return; }
-
-  const toSend = contacts.filter(c => c.valid);
-  document.getElementById('progress-bar').classList.remove('hidden');
-  const log = document.getElementById('sending-log');
-  
-  for (let i = 0; i < toSend.length; i++) {
-    const contact = toSend[i];
-    try {
-      await sendViaSmtp({
-        host: smtpHost, port: smtpPort, user: smtpUser, pass: smtpPass,
-        from: fromEmail, to: contact.email,
-        subject: applyTemplate(document.getElementById('mail-subject').value, contact),
-        body: applyTemplate(document.getElementById('mail-body').value, contact),
-        portfolioBase64, portfolioName: portfolioFile.name
-      });
-      log.innerHTML += `<div class="log-ok">✅ Envoyé à ${contact.email}</div>`;
-    } catch (err) {
-      log.innerHTML += `<div class="log-err">❌ Erreur ${contact.email} : ${err.message}</div>`;
+    if (!user || !pass || !contacts.length || !portfolio.base64) {
+        alert("Remplis tous les champs (Email, Pass, CSV et PDF) !");
+        return;
     }
-    document.getElementById('progress-fill').style.width = ((i+1)/toSend.length*100) + '%';
-    await new Promise(r => setTimeout(r, 1000));
-  }
-}
 
-async function sendViaSmtp(params) {
-  if (!window.Email) throw new Error("Librairie SMTP non chargée");
-  return window.Email.send({
-    Host: params.host, Username: params.user, Password: params.pass, Port: params.port,
-    To: params.to, From: params.from, Subject: params.subject,
-    Body: params.body.replace(/\n/g, '<br>'),
-    Attachments: [{ name: params.portfolioName, data: "data:application/pdf;base64," + params.portfolioBase64 }]
-  }).then(msg => msg === 'OK' ? Promise.resolve() : Promise.reject(new Error(msg)));
+    log.innerHTML = "Début de l'envoi...<br>";
+
+    for (let i = 0; i < contacts.length; i++) {
+        const c = contacts[i];
+        const body = document.getElementById('mail-body').value.replace('{{prenom}}', c.name).replace('{{entreprise}}', c.company);
+        
+        try {
+            const result = await Email.send({
+                Host: "smtp.gmail.com",
+                Username: user,
+                Password: pass,
+                To: c.email,
+                From: user,
+                Subject: `Candidature — ${c.company}`,
+                Body: body.replace(/\n/g, '<br>'),
+                Port: 587,
+                Attachments: [{ name: portfolio.name, data: "data:application/pdf;base64," + portfolio.base64 }]
+            });
+
+            if (result === "OK") {
+                log.innerHTML += `<span class="success">✅ Envoyé à ${c.email}</span><br>`;
+            } else {
+                log.innerHTML += `<span class="error">❌ Erreur ${c.email} : ${result}</span><br>`;
+            }
+        } catch (err) {
+            log.innerHTML += `<span class="error">❌ Échec critique ${c.email}</span><br>`;
+        }
+        
+        // Pause pour ne pas saturer Gmail
+        await new Promise(r => setTimeout(r, 2000));
+    }
+    log.innerHTML += "<b>Terminé !</b>";
 }
 </script>
 </body>
