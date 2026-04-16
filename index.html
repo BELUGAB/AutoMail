@@ -2,76 +2,133 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Candidatures Auto — Prêt à l'envoi</title>
+    <title>Candidatures Express</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #f5f0e8; --ink: #1a1612; --accent: #c94f2b; --border: #d4cdc2; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 40px 20px; text-align: center; }
-        .card { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; }
-        h1 { font-family: 'DM Serif Display', serif; margin-bottom: 20px; }
-        .drop-zone { border: 2px dashed var(--border); padding: 30px; margin-bottom: 20px; cursor: pointer; background: #fafafa; }
-        textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; height: 100px; margin-bottom: 20px; }
-        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .btn-open { padding: 6px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; }
-        .btn-open:visited { background: #5c5347; }
-        #list { margin-top: 20px; text-align: left; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 40px 20px; }
+        .card { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 10px; }
+        .desc { font-size: 0.9rem; margin-bottom: 25px; color: #555; }
+        
+        .drop-zone { border: 2px dashed var(--border); padding: 25px; text-align: center; margin-bottom: 15px; cursor: pointer; border-radius: 4px; background: #fafafa; transition: 0.2s; }
+        .drop-zone:hover { border-color: var(--accent); background: #fffcfb; }
+        .file-ok { color: #2d6a4f; font-weight: bold; font-size: 0.85rem; }
+
+        textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; height: 120px; margin-bottom: 20px; font-family: inherit; font-size: 0.95rem; }
+        
+        #list { margin-top: 30px; text-align: left; border-top: 2px solid var(--bg); padding-top: 20px; }
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+        .contact-row:hover { background: #fdfcfb; }
+        .info { display: flex; flex-direction: column; }
+        .info b { font-size: 0.95rem; }
+        .info span { font-size: 0.8rem; color: #777; }
+
+        .btn-gmail { padding: 10px 18px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: 0.2s; }
+        .btn-gmail:hover { background: #333; transform: translateY(-1px); }
+        .btn-done { background: #ccc !important; cursor: default; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>Candidatures Express</h1>
-    <p>Glisse ton CSV, et clique sur chaque bouton pour envoyer.</p>
+    <h1>Salut frérot ! 🚀</h1>
+    <p class="desc">1. Charge ton CSV — 2. Ton Portfolio — 3. Prépare tes mails.</p>
 
     <div class="drop-zone" onclick="document.getElementById('csv-in').click()">
         <input type="file" id="csv-in" accept=".csv" hidden>
-        <div id="csv-label">📁 Charger le fichier CSV</div>
+        <div id="csv-label">📁 1. Choisis ton fichier CSV (Contacts)</div>
     </div>
 
-    <textarea id="mail-body">Bonjour {{prenom}}, je postule chez {{entreprise}}. Mon portfolio est en pièce jointe.</textarea>
+    <div class="drop-zone" onclick="document.getElementById('pdf-in').click()">
+        <input type="file" id="pdf-in" accept=".pdf" hidden>
+        <div id="pdf-label">📎 2. Sélectionne ton Portfolio PDF</div>
+    </div>
 
-    <div id="list"></div>
+    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 5px;">3. TON MESSAGE PERSONNALISÉ</label>
+    <textarea id="mail-body">Bonjour {{prenom}},
+
+Je me permets de vous contacter concernant d'éventuelles opportunités chez {{entreprise}}.
+
+Je vous joins mon portfolio à ce mail.
+
+Bien cordialement,</textarea>
+
+    <div id="list">
+        </div>
 </div>
 
 <script>
+let contacts = [];
+
+// Gestion du CSV
 document.getElementById('csv-in').onchange = e => {
     const reader = new FileReader();
     reader.onload = () => {
         const lines = reader.result.split('\n');
         const sep = lines[0].includes(';') ? ';' : ',';
         const headers = lines[0].split(sep).map(h => h.trim().replace(/"/g,''));
+        
         const emailIdx = headers.indexOf('Email');
         const compIdx = headers.indexOf('Company Name');
         const firstIdx = headers.indexOf('First Name');
 
-        const contacts = lines.slice(1).filter(l => l.trim()).map(line => {
+        contacts = lines.slice(1).filter(l => l.trim()).map(line => {
             const cells = line.split(sep).map(c => c.trim().replace(/"/g,''));
-            return { email: cells[emailIdx], company: cells[compIdx] || "", name: cells[firstIdx] || "" };
-        }).filter(c => c.email);
+            return {
+                email: cells[emailIdx],
+                company: cells[compIdx] || "votre entreprise",
+                name: cells[firstIdx] || "Madame, Monsieur"
+            };
+        }).filter(c => c.email && c.email.includes('@'));
 
-        renderList(contacts);
+        document.getElementById('csv-label').innerHTML = `<span class="file-ok">✅ ${contacts.length} entreprises prêtes</span>`;
+        renderList();
     };
     reader.readAsText(e.target.files[0]);
 };
 
-function renderList(contacts) {
+// Gestion du PDF (Simple retour visuel)
+document.getElementById('pdf-in').onchange = e => {
+    const fileName = e.target.files[0].name;
+    document.getElementById('pdf-label').innerHTML = `<span class="file-ok">✅ Portfolio prêt : ${fileName}</span>`;
+};
+
+function renderList() {
     const list = document.getElementById('list');
     const bodyTpl = document.getElementById('mail-body').value;
-    list.innerHTML = "<strong>Clique sur chaque bouton (ils changeront de couleur après l'envoi) :</strong><br><br>";
+    list.innerHTML = "<p style='font-size: 0.8rem; margin-bottom: 15px;'><i>Clique sur chaque bouton pour ouvrir Gmail. N'oublie pas de glisser ton PDF !</i></p>";
 
-    contacts.forEach(c => {
+    contacts.forEach((c, index) => {
         const subject = encodeURIComponent(`Candidature — ${c.company}`);
         const body = encodeURIComponent(bodyTpl.replace('{{prenom}}', c.name).replace('{{entreprise}}', c.company));
-        const mailto = `mailto:${c.email}?subject=${subject}&body=${body}`;
+        
+        // URL pour ouvrir Gmail Web directement dans un nouvel onglet
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${c.email}&su=${subject}&body=${body}`;
 
         const row = document.createElement('div');
         row.className = 'contact-row';
         row.innerHTML = `
-            <span>${c.company} (${c.email})</span>
-            <a href="${mailto}" class="btn-open" onclick="this.style.background='#ccc'">OUVRIR GMAIL</a>
+            <div class="info">
+                <b>${c.company}</b>
+                <span>${c.email}</span>
+            </div>
+            <a href="${gmailUrl}" 
+               target="_blank" 
+               class="btn-gmail" 
+               id="btn-${index}"
+               onclick="markAsDone(${index})">
+               PRÉPARER LE MAIL
+            </a>
         `;
         list.appendChild(row);
     });
+}
+
+function markAsDone(index) {
+    const btn = document.getElementById(`btn-${index}`);
+    btn.classList.add('btn-done');
+    btn.innerText = "OUVERT ✅";
 }
 </script>
 </body>
