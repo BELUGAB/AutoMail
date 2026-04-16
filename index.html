@@ -2,66 +2,103 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Candidatures Express</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <title>AutoMail — Plein Écran</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #f5f0e8; --ink: #1a1612; --accent: #c94f2b; --border: #d4cdc2; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 40px 20px; }
-        .card { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 10px; }
-        .desc { font-size: 0.9rem; margin-bottom: 25px; color: #555; }
         
-        .drop-zone { border: 2px dashed var(--border); padding: 25px; text-align: center; margin-bottom: 15px; cursor: pointer; border-radius: 4px; background: #fafafa; transition: 0.2s; }
+        /* On utilise 100% de la largeur avec un petit padding de sécurité */
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); padding: 20px; margin: 0; }
+        
+        .container { width: 100%; max-width: 100%; margin: 0 auto; box-sizing: border-box; }
+        
+        .card { background: white; padding: 30px; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--bg); padding-bottom: 15px; }
+        h1 { font-family: 'DM Serif Display', serif; font-size: 2.5rem; margin: 0; }
+        
+        .drop-zone { border: 2px dashed var(--border); padding: 30px; text-align: center; cursor: pointer; border-radius: 4px; background: #fafafa; transition: 0.2s; margin-bottom: 30px; }
         .drop-zone:hover { border-color: var(--accent); background: #fffcfb; }
-        .file-ok { color: #2d6a4f; font-weight: bold; font-size: 0.85rem; }
-
-        textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 4px; height: 120px; margin-bottom: 20px; font-family: inherit; font-size: 0.95rem; }
         
-        #list { margin-top: 30px; text-align: left; border-top: 2px solid var(--bg); padding-top: 20px; }
-        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
-        .contact-row:hover { background: #fdfcfb; }
-        .info { display: flex; flex-direction: column; }
-        .info b { font-size: 0.95rem; }
-        .info span { font-size: 0.8rem; color: #777; }
+        .config-section { display: flex; flex-direction: column; gap: 25px; margin-bottom: 30px; }
+        .field-wrap { width: 100%; }
+        
+        label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; display: block; color: #555; letter-spacing: 1px; }
+        
+        /* Les inputs prennent toute la largeur disponible */
+        input, textarea { width: 100%; padding: 15px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: 1rem; box-sizing: border-box; background: #fff; transition: border-color 0.2s; }
+        input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+        textarea { height: 250px; resize: vertical; line-height: 1.6; }
 
-        .btn-gmail { padding: 10px 18px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 0.85rem; transition: 0.2s; }
-        .btn-gmail:hover { background: #333; transform: translateY(-1px); }
-        .btn-done { background: #ccc !important; cursor: default; }
+        .toolbar { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+        .pill { background: var(--bg); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: all 0.2s; user-select: none; }
+        .pill:hover { background: var(--accent); color: white; border-color: var(--accent); transform: translateY(-1px); }
+        .pill:active { transform: translateY(0); }
+        
+        .hint { font-size: 0.8rem; color: #888; font-style: italic; margin-left: auto; }
+
+        #list { margin-top: 40px; border-top: 2px solid var(--bg); }
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f0f0f0; }
+        .contact-row:hover { background: #fdfcfb; }
+        
+        .info { display: flex; flex-direction: column; gap: 4px; }
+        .info b { font-size: 1.1rem; color: var(--ink); }
+        .info span { font-size: 0.9rem; color: #666; }
+
+        .btn-gmail { padding: 12px 24px; background: var(--ink); color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: 0.2s; text-align: center; min-width: 180px; }
+        .btn-gmail:hover { background: var(--accent); box-shadow: 0 4px 8px rgba(201, 79, 43, 0.2); }
+        .btn-done { background: #ccc !important; cursor: default; box-shadow: none !important; }
+        
+        .file-ok { color: #2d6a4f; font-weight: 700; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>Salut frérot ! 🚀</h1>
-    <p class="desc">1. Charge ton CSV — 2. Ton Portfolio — 3. Prépare tes mails.</p>
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>AutoMail</h1>
+            <div class="hint">Astuce : Place ton curseur et clique sur un jeton pour l'insérer.</div>
+        </div>
 
-    <div class="drop-zone" onclick="document.getElementById('csv-in').click()">
-        <input type="file" id="csv-in" accept=".csv" hidden>
-        <div id="csv-label">📁 1. Choisis ton fichier CSV (Contacts)</div>
-    </div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-in').click()">
+            <input type="file" id="csv-in" accept=".csv" hidden>
+            <div id="csv-label">📁 CLIQUE ICI POUR CHARGER TON FICHIER CSV (CONTACTS)</div>
+        </div>
 
-    <div class="drop-zone" onclick="document.getElementById('pdf-in').click()">
-        <input type="file" id="pdf-in" accept=".pdf" hidden>
-        <div id="pdf-label">📎 2. Sélectionne ton Portfolio PDF</div>
-    </div>
+        <div class="config-section">
+            <div class="field-wrap">
+                <label>Objet du mail</label>
+                <div class="toolbar">
+                    <span class="pill" onclick="insertVar('{{entreprise}}', 'mail-subject')">+ Entreprise</span>
+                </div>
+                <input type="text" id="mail-subject" value="Candidature — {{entreprise}}">
+            </div>
 
-    <label style="font-size: 0.75rem; font-weight: bold; display: block; margin-bottom: 5px;">3. TON MESSAGE PERSONNALISÉ</label>
-    <textarea id="mail-body">Bonjour {{prenom}},
+            <div class="field-wrap">
+                <label>Message personnalisé</label>
+                <div class="toolbar">
+                    <span class="pill" onclick="insertVar('{{prenom}}', 'mail-body')">+ Prénom</span>
+                    <span class="pill" onclick="insertVar('{{entreprise}}', 'mail-body')">+ Entreprise</span>
+                </div>
+                <textarea id="mail-body">Bonjour {{prenom}},
 
 Je me permets de vous contacter concernant d'éventuelles opportunités chez {{entreprise}}.
 
 Je vous joins mon portfolio à ce mail.
 
 Bien cordialement,</textarea>
-
-    <div id="list">
+            </div>
         </div>
+
+        <div id="list">
+            </div>
+    </div>
 </div>
 
 <script>
 let contacts = [];
 
-// Gestion du CSV
 document.getElementById('csv-in').onchange = e => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -82,53 +119,60 @@ document.getElementById('csv-in').onchange = e => {
             };
         }).filter(c => c.email && c.email.includes('@'));
 
-        document.getElementById('csv-label').innerHTML = `<span class="file-ok">✅ ${contacts.length} entreprises prêtes</span>`;
+        document.getElementById('csv-label').innerHTML = `<span class="file-ok">✅ ${contacts.length} EMAILS PRÊTS POUR L'EXPÉDITION</span>`;
         renderList();
     };
     reader.readAsText(e.target.files[0]);
 };
 
-// Gestion du PDF (Simple retour visuel)
-document.getElementById('pdf-in').onchange = e => {
-    const fileName = e.target.files[0].name;
-    document.getElementById('pdf-label').innerHTML = `<span class="file-ok">✅ Portfolio prêt : ${fileName}</span>`;
-};
+function insertVar(val, targetId) {
+    const el = document.getElementById(targetId);
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const text = el.value;
+    el.value = text.slice(0, start) + val + text.slice(end);
+    
+    // On replace le curseur juste après l'insertion
+    el.focus();
+    el.setSelectionRange(start + val.length, start + val.length);
+}
 
 function renderList() {
     const list = document.getElementById('list');
-    const bodyTpl = document.getElementById('mail-body').value;
-    list.innerHTML = "<p style='font-size: 0.8rem; margin-bottom: 15px;'><i>Clique sur chaque bouton pour ouvrir Gmail. N'oublie pas de glisser ton PDF !</i></p>";
+    list.innerHTML = "";
 
     contacts.forEach((c, index) => {
-        const subject = encodeURIComponent(`Candidature — ${c.company}`);
-        const body = encodeURIComponent(bodyTpl.replace('{{prenom}}', c.name).replace('{{entreprise}}', c.company));
-        
-        // URL pour ouvrir Gmail Web directement dans un nouvel onglet
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${c.email}&su=${subject}&body=${body}`;
-
         const row = document.createElement('div');
         row.className = 'contact-row';
         row.innerHTML = `
             <div class="info">
                 <b>${c.company}</b>
-                <span>${c.email}</span>
+                <span>Destinataire : ${c.email}</span>
             </div>
-            <a href="${gmailUrl}" 
-               target="_blank" 
-               class="btn-gmail" 
-               id="btn-${index}"
-               onclick="markAsDone(${index})">
-               PRÉPARER LE MAIL
-            </a>
+            <button class="btn-gmail" id="btn-${index}" onclick="openGmail(${index})">
+               OUVRIR DANS GMAIL
+            </button>
         `;
         list.appendChild(row);
     });
 }
 
-function markAsDone(index) {
+function openGmail(index) {
+    const c = contacts[index];
+    const subjectTpl = document.getElementById('mail-subject').value;
+    const bodyTpl = document.getElementById('mail-body').value;
+
+    const subject = encodeURIComponent(subjectTpl.replace(/{{entreprise}}/g, c.company));
+    const body = encodeURIComponent(bodyTpl.replace(/{{prenom}}/g, c.name).replace(/{{entreprise}}/g, c.company));
+    
+    // Ouverture de la fenêtre Gmail
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${c.email}&su=${subject}&body=${body}`;
+    window.open(gmailUrl, '_blank');
+
+    // Feedback visuel sur le bouton
     const btn = document.getElementById(`btn-${index}`);
     btn.classList.add('btn-done');
-    btn.innerText = "OUVERT ✅";
+    btn.innerText = "MAIL OUVERT ✅";
 }
 </script>
 </body>
